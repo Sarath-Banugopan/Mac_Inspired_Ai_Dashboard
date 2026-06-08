@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Personal AI Agent Console</title>
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="./styles/main.css" />
+
+    <!-- Chart.js for crypto graph -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"
+      defer
+    ></script>
+
+    <!-- App scripts (we'll fill these next) -->
+    <script src="./scripts/main.js" defer></script>
+
+    <script src="./scripts/widgets/weather.js" defer></script>
+    <script src="./scripts/widgets/crypto.js" defer></script>
+    <script src="./scripts/widgets/cryptoChart.js" defer></script>
+    <script src="./scripts/widgets/news.js" defer></script>
+    <script src="./scripts/widgets/github.js" defer></script>
+    <script src="./scripts/widgets/tasks.js" defer></script>
+    <script src="./scripts/widgets/system.js" defer></script>
+
+    <script src="./scripts/agent/geminiClient.js" defer></script>
+    <script src="./scripts/agent/agent.js" defer></script>
+  </head>
+  <body>
+    <!-- Top mac-style bar -->
+    <header class="menu-bar">
+      <div class="menu-left">
+        <span class="menu-dot red"></span>
+        <span class="menu-dot amber"></span>
+        <span class="menu-dot green"></span>
+        <span class="menu-title">PERSONAL AI AGENT CONSOLE</span>
+      </div>
+      <div class="menu-right">
+        <span class="menu-status-dot"></span>
+        <span class="menu-status-text">Live data · Browser only</span>
+        <button class="btn" id="dashboard-mode-toggle" type="button">
+  <i class="fa-solid fa-table-columns"></i> Dashboard Mode
+</button>
+        <span id="clock"></span>
+      </div>
+    </header>
+
+    <!-- Desktop workspace -->
+    <main class="desktop" id="desktop">
+      <!-- WEATHER WINDOW -->
+      <section
+        class="mac-window"
+        id="window-weather"
+        style="top: 64px; left: 70px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-weather')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-weather')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-weather')"
+            ></button>
+          </div>
+          <div class="window-title">Weather</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Current conditions</div>
+          <div class="widget-subtitle" id="weather-location">
+            Chennai
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">Temperature</span>
+            <span class="metric-value" id="weather-temp">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Wind speed</span>
+            <span class="metric-value" id="weather-wind">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Humidity</span>
+            <span class="metric-value" id="weather-humidity">--</span>
+          </div>
+
+          <p class="muted" id="weather-summary">
+            Fetching real-time weather…
+          </p>
+
+          <div class="pill-row">
+            <button class="btn" id="weather-refresh">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <span class="pill blue">Open‑Meteo API</span>
+            <span class="pill" id="weather-updated">Updated: --</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CRYPTO WINDOW -->
+      <section
+        class="mac-window"
+        id="window-crypto"
+        style="top: 82px; left: 520px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-crypto')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-crypto')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-crypto')"
+            ></button>
+          </div>
+          <div class="window-title">Crypto Watchlist</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">BTC · ETH (USD)</div>
+          <div class="widget-subtitle">Live prices from CoinGecko.</div>
+
+          <!-- BTC 24h chart -->
+          <div class="crypto-chart-panel">
+            <canvas
+              id="crypto-chart"
+              class="crypto-chart"
+            ></canvas>
+          </div>
+
+          <div class="metric-row" style="margin-top: 8px;">
+            <span class="metric-label">Bitcoin</span>
+            <span class="metric-value" id="btc-price">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">24h change</span>
+            <span class="metric-value" id="btc-change">--</span>
+          </div>
+
+          <div class="metric-row" style="margin-top: 8px;">
+            <span class="metric-label">Ethereum</span>
+            <span class="metric-value" id="eth-price">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">24h change</span>
+            <span class="metric-value" id="eth-change">--</span>
+          </div>
+
+          <p class="muted" id="crypto-note">
+            Auto-refresh every 60s.
+          </p>
+
+          <div class="pill-row">
+            <button class="btn" id="crypto-refresh">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <span class="pill blue">CoinGecko API</span>
+            <span class="pill" id="crypto-updated">Updated: --</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEWS WINDOW -->
+      <section
+        class="mac-window"
+        id="window-news"
+        style="top: 310px; left: 90px; width: 620px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-news')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-news')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-news')"
+            ></button>
+          </div>
+          <div class="window-title">Tech Headlines</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Top technology news (IN)</div>
+          <div class="widget-subtitle">
+            JSON mirror of NewsAPI – no API key required.
+          </div>
+
+          <ul class="news-list" id="news-list"></ul>
+          <p class="muted" id="news-empty" style="display: none;">
+            No headlines available. Try refreshing.
+          </p>
+
+          <div class="pill-row" style="margin-top: 12px;">
+            <button class="btn" id="news-refresh">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <span class="pill red">News JSON</span>
+            <span class="pill" id="news-updated">Updated: --</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- AGENT WINDOW -->
+      <section
+        class="mac-window"
+        id="window-agent"
+        style="top: 76px; left: 980px; width: 420px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-agent')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-agent')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-agent')"
+            ></button>
+          </div>
+          <div class="window-title">On‑Screen Agent</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Gemini‑powered assistant</div>
+          <div class="widget-subtitle">
+            Uses Gemini plus your live dashboard tools to answer questions.
+          </div>
+
+          <label
+  for="gemini-key"
+  style="font-size: 12px; color: #4b5563; font-weight: 600;"
+  >Gemini API key (in‑tab only)</label
+>
+<div class="agent-input-row" style="margin-top: 6px;">
+  <input
+  id="gemini-key"
+  type="password"
+  placeholder="Paste your Gemini API key here"
+  autocomplete="off"
+  spellcheck="false"
+  style="
+    flex: 1;
+    min-height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.6);
+    padding: 8px 10px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
+  "
+/>
+  <button class="btn" id="gemini-save">
+    <i class="fa-solid fa-plug"></i> Use
+  </button>
+</div>
+<p class="muted">
+  Key is only stored in memory in this tab. Don’t commit it to Git.
+</p>
+<p class="muted" id="gemini-key-status" style="margin-top: 4px;"></p>
+
+          <div class="pill-row" style="margin-top: 10px;">
+            <button class="btn" data-prompt="Weather recap for my dashboard.">
+              ☁️ Weather recap
+            </button>
+            <button
+              class="btn"
+              data-prompt="Crypto market summary from the dashboard."
+            >
+              ₿ Crypto summary
+            </button>
+            <button
+              class="btn"
+              data-prompt="Summarize the latest tech headlines from the dashboard."
+            >
+              📰 Tech headlines
+            </button>
+            <button
+              class="btn"
+              data-prompt="Give me a concise overview of weather, crypto and news together."
+            >
+              ⚡ Full overview
+            </button>
+          </div>
+
+          <div class="agent-messages" id="agent-messages">
+            Agent ready. After we wire Gemini, answers will appear here.
+          </div>
+
+          <div class="agent-input-row">
+            <textarea
+              id="agent-input"
+              placeholder='Ask: "How is BTC doing today?" or "Summarize everything on my dashboard."'
+            ></textarea>
+            <button class="btn primary" id="agent-send">
+              Ask Gemini
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GITHUB ACTIVITY WINDOW -->
+      <section
+        class="mac-window"
+        id="window-github"
+        style="top: 320px; left: 980px; width: 420px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-github')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-github')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-github')"
+            ></button>
+          </div>
+          <div class="window-title">GitHub Activity</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Recent activity</div>
+          <div class="widget-subtitle">
+            Latest public events from your GitHub profile.
+          </div>
+
+          <div style="margin-top: 8px; margin-bottom: 8px;">
+            <label
+              for="github-username"
+              style="font-size: 12px; color: #4b5563; font-weight: 600;"
+              >GitHub username</label
+            >
+            <input
+              id="github-username"
+              type="text"
+              placeholder="your-github-username"
+              style="
+                width: 100%;
+                margin-top: 4px;
+                padding: 6px 8px;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                font-size: 13px;
+              "
+            />
+          </div>
+
+          <ul class="news-list" id="github-activity-list"></ul>
+          <p class="muted" id="github-empty" style="display: none;">
+            No recent public activity. Push or star something and refresh.
+          </p>
+
+          <div class="pill-row" style="margin-top: 12px;">
+            <button class="btn" id="github-refresh">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <span class="pill blue">GitHub Events API</span>
+            <span class="pill" id="github-updated">Updated: --</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TASKS / TODAY WINDOW -->
+      <section
+        class="mac-window"
+        id="window-tasks"
+        style="top: 120px; left: 120px; width: 420px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-tasks')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-tasks')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-tasks')"
+            ></button>
+          </div>
+          <div class="window-title">Today · Tasks</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Inbox for today</div>
+          <div class="widget-subtitle">
+            Quick tasks for weather, markets, code and life.
+          </div>
+
+          <form
+            id="task-form"
+            style="margin-top: 10px; display: flex; gap: 8px;"
+          >
+            <input
+              id="task-input"
+              type="text"
+              placeholder="Add a task and hit Enter"
+              style="
+                flex: 1;
+                padding: 6px 8px;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                font-size: 13px;
+              "
+            />
+            <button class="btn" type="submit">Add</button>
+          </form>
+
+          <ul class="task-list" id="task-list"></ul>
+
+          <div class="pill-row" style="margin-top: 10px;">
+            <button class="btn" id="task-clear-done">
+              Clear completed
+            </button>
+            <button class="btn" id="task-clear-all">
+              Clear all
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SYSTEM MONITOR WINDOW -->
+      <section
+        class="mac-window"
+        id="window-system"
+        style="top: 260px; left: 560px; width: 420px;"
+      >
+        <div class="window-header">
+          <div class="traffic-lights">
+            <button
+              class="light close"
+              type="button"
+              title="Close"
+              onclick="closeWindow('window-system')"
+            ></button>
+            <button
+              class="light minimize"
+              type="button"
+              title="Toggle Fullscreen"
+              onclick="toggleMaximize('window-system')"
+            ></button>
+            <button
+              class="light maximize"
+              type="button"
+              title="Minimize"
+              onclick="minimizeWindow('window-system')"
+            ></button>
+          </div>
+          <div class="window-title">System Monitor</div>
+        </div>
+        <div class="window-content">
+          <div class="widget-section-title">Browser environment</div>
+          <div class="widget-subtitle">
+            Snapshot of this device and browser, as far as the web can see.
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">Logical CPU cores</span>
+            <span class="metric-value" id="sys-cores">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Approx. RAM</span>
+            <span class="metric-value" id="sys-ram">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Device type</span>
+            <span class="metric-value" id="sys-device">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Browser</span>
+            <span class="metric-value" id="sys-browser">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Online status</span>
+            <span class="metric-value" id="sys-online">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Battery</span>
+            <span class="metric-value" id="sys-battery">--</span>
+          </div>
+
+          <p class="muted" id="sys-note">
+            Values are approximations reported by the browser APIs.
+          </p>
+
+          <div class="pill-row" style="margin-top: 10px;">
+            <button class="btn" id="sys-refresh">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- UNIFIED FULLSCREEN DASHBOARD -->
+<section class="unified-dashboard" id="unified-dashboard">
+  <div class="unified-dashboard__header">
+    <div>
+      <div class="widget-section-title">Unified Dashboard</div>
+      <div class="widget-subtitle">
+        All widgets merged into one fullscreen workspace.
+      </div>
+    </div>
+    <button class="btn" id="dashboard-mode-close" type="button">
+      <i class="fa-solid fa-xmark"></i> Exit Dashboard
+    </button>
+  </div>
+
+  <div class="unified-grid">
+    <article class="unified-card unified-card--weather">
+      <div class="widget-section-title">Weather</div>
+      <div class="metric-row">
+        <span class="metric-label">Temperature</span>
+        <span class="metric-value" id="ud-weather-temp">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Wind</span>
+        <span class="metric-value" id="ud-weather-wind">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Humidity</span>
+        <span class="metric-value" id="ud-weather-humidity">--</span>
+      </div>
+      <p class="muted" id="ud-weather-summary">Waiting for weather data...</p>
+    </article>
+
+    <article class="unified-card unified-card--crypto">
+      <div class="widget-section-title">Crypto</div>
+      <div class="metric-row">
+        <span class="metric-label">Bitcoin</span>
+        <span class="metric-value" id="ud-btc-price">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">BTC 24h</span>
+        <span class="metric-value" id="ud-btc-change">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Ethereum</span>
+        <span class="metric-value" id="ud-eth-price">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">ETH 24h</span>
+        <span class="metric-value" id="ud-eth-change">--</span>
+      </div>
+      <div class="crypto-chart-panel" style="margin-top: 12px;">
+        <canvas id="unified-crypto-chart" class="crypto-chart"></canvas>
+      </div>
+    </article>
+
+    <article class="unified-card unified-card--news">
+      <div class="widget-section-title">Tech Headlines</div>
+      <ul class="news-list" id="ud-news-list"></ul>
+      <p class="muted" id="ud-news-empty">Waiting for news...</p>
+    </article>
+
+    <article class="unified-card unified-card--github">
+      <div class="widget-section-title">GitHub Activity</div>
+      <ul class="news-list" id="ud-github-list"></ul>
+      <p class="muted" id="ud-github-empty">Waiting for GitHub activity...</p>
+    </article>
+
+    <article class="unified-card unified-card--tasks">
+      <div class="widget-section-title">Tasks</div>
+      <ul class="task-list" id="ud-task-list"></ul>
+      <p class="muted" id="ud-task-empty">No tasks yet.</p>
+    </article>
+
+    <article class="unified-card unified-card--system">
+      <div class="widget-section-title">System Monitor</div>
+      <div class="metric-row">
+        <span class="metric-label">CPU cores</span>
+        <span class="metric-value" id="ud-sys-cores">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Approx RAM</span>
+        <span class="metric-value" id="ud-sys-ram">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Browser</span>
+        <span class="metric-value" id="ud-sys-browser">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Battery</span>
+        <span class="metric-value" id="ud-sys-battery">--</span>
+      </div>
+    </article>
+
+    <article class="unified-card unified-card--agent">
+  <div class="widget-section-title">AI Assistant</div>
+  <div class="widget-subtitle">
+    Chat with Gemini directly in dashboard mode.
+  </div>
+
+  <div class="agent-messages" id="ud-agent-messages">
+    Gemini dashboard chat ready.
+  </div>
+
+  <div class="agent-input-row">
+    <textarea
+      id="ud-agent-input"
+      placeholder='Ask: "Summarize my dashboard" or "What should I focus on next?"'
+    ></textarea>
+    <button class="btn primary" id="ud-agent-send" type="button">
+      Ask
+    </button>
+  </div>
+</article>
+  </div>
+</section>
+    </main>
+
+    <!-- Dock -->
+    <div class="dock-wrap">
+      <div class="dock">
+        <button
+          class="dock-icon dock-weather"
+          id="dock-window-weather"
+          data-window="window-weather"
+          title="Weather"
+          type="button"
+        >
+          ☁️
+        </button>
+        <button
+          class="dock-icon dock-crypto"
+          id="dock-window-crypto"
+          data-window="window-crypto"
+          title="Crypto"
+          type="button"
+        >
+          ₿
+        </button>
+        <button
+          class="dock-icon dock-news"
+          id="dock-window-news"
+          data-window="window-news"
+          title="Tech Headlines"
+          type="button"
+        >
+          📰
+        </button>
+        <button
+          class="dock-icon dock-agent"
+          id="dock-window-agent"
+          data-window="window-agent"
+          title="AI Agent"
+          type="button"
+        >
+          🤖
+        </button>
+        <button
+          class="dock-icon dock-github"
+          id="dock-window-github"
+          data-window="window-github"
+          title="GitHub Activity"
+          type="button"
+        >
+          <i class="fa-brands fa-github"></i>
+        </button>
+        <button
+          class="dock-icon dock-tasks"
+          id="dock-window-tasks"
+          data-window="window-tasks"
+          title="Tasks"
+          type="button"
+        >
+          ✅
+        </button>
+        <button
+          class="dock-icon dock-system"
+          id="dock-window-system"
+          data-window="window-system"
+          title="System Monitor"
+          type="button"
+        >
+          💻
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
