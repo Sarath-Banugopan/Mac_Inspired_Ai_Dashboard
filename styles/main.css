@@ -134,6 +134,81 @@ body::before {
   animation: liftIn 0.28s ease-out;
 }
 
+body.dashboard-mode .desktop {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1.15fr 0.95fr;
+  grid-template-rows: minmax(220px, 34vh) minmax(250px, 40vh);
+  gap: 14px;
+  padding: 14px 14px 92px;
+  height: calc(100% - 32px);
+  align-content: stretch;
+}
+
+body.dashboard-mode .mac-window {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  display: flex !important;
+  z-index: auto !important;
+}
+
+body.dashboard-mode .window-content {
+  height: calc(100% - 44px);
+  overflow-y: auto;
+}
+
+body.dashboard-mode #window-weather { grid-column: 1; grid-row: 1; }
+body.dashboard-mode #window-tasks   { grid-column: 1; grid-row: 2; }
+
+body.dashboard-mode #window-crypto  { grid-column: 2; grid-row: 1; }
+body.dashboard-mode #window-news    { grid-column: 2; grid-row: 2; }
+
+body.dashboard-mode #window-agent   { grid-column: 3; grid-row: 1; }
+body.dashboard-mode #window-github  { grid-column: 3; grid-row: 2; }
+
+body.dashboard-mode #window-system  { grid-column: 4; grid-row: 1; }
+
+body.dashboard-mode .dock-wrap {
+  bottom: 10px;
+}
+
+@media (max-width: 1400px) {
+  body.dashboard-mode .desktop {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: repeat(3, minmax(220px, 1fr));
+  }
+
+  body.dashboard-mode #window-weather { grid-column: 1; grid-row: 1; }
+  body.dashboard-mode #window-crypto  { grid-column: 2; grid-row: 1; }
+  body.dashboard-mode #window-agent   { grid-column: 3; grid-row: 1; }
+
+  body.dashboard-mode #window-tasks   { grid-column: 1; grid-row: 2; }
+  body.dashboard-mode #window-news    { grid-column: 2; grid-row: 2; }
+  body.dashboard-mode #window-github  { grid-column: 3; grid-row: 2; }
+
+  body.dashboard-mode #window-system  { grid-column: 1 / span 3; grid-row: 3; }
+}
+
+@media (max-width: 900px) {
+  body.dashboard-mode .desktop {
+    display: block;
+    padding: 10px 10px 96px;
+    overflow-y: auto;
+    height: calc(100% - 32px);
+  }
+
+  body.dashboard-mode .mac-window {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 280px;
+    margin-bottom: 12px;
+  }
+}
+
 .mac-window.visible {
   display: flex;
 }
@@ -352,8 +427,11 @@ body.has-maximized .dock-wrap {
   margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .news-item-title {
@@ -671,5 +749,24 @@ body.dashboard-mode .dock-wrap {
   .unified-card--system,
   .unified-card--agent {
     grid-column: span 1;
+  }
+}
+
+body.simple-layout .desktop {
+  padding: 20px 24px 110px;
+}
+
+body.simple-layout .mac-window {
+  position: absolute;
+}
+
+body.simple-layout #window-agent {
+  box-shadow: 0 28px 55px rgba(12, 55, 98, 0.24);
+}
+
+@media (max-width: 1400px) {
+  body.simple-layout #window-agent {
+    left: 768px !important;
+    width: calc(100vw - 792px) !important;
   }
 }

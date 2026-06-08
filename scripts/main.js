@@ -160,8 +160,16 @@ document.addEventListener("keydown", (event) => {
 updateClock();
 setInterval(updateClock, 1000);
 
-// Open weather by default
-openWindow("window-weather");
+// ----- Initialize -----
+updateClock();
+setInterval(updateClock, 1000);
+
+// Open only the three startup windows
+openWindow("window-crypto");
+openWindow("window-news");
+openWindow("window-agent");
+
+
 
 let isDashboardMode = false;
 

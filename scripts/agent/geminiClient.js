@@ -1,14 +1,8 @@
 // scripts/agent/geminiClient.js
-// Gemini 2.5 Flash client + key handling
-// - stores key only in memory
-// - no alert popups
-// - masked key input supported
-// - friendly status updates
-// - better API error messages (401 / 403 / 429)
+// Lighter Gemini client using Gemini 2.5 Flash-Lite
 
 let GEMINI_API_KEY = "";
 
-// Called when user clicks the "Use" button next to the key field
 function setGeminiKeyFromInput() {
   const keyEl = document.getElementById("gemini-key");
   const statusEl = document.getElementById("gemini-key-status");
@@ -33,7 +27,7 @@ function setGeminiKeyFromInput() {
   GEMINI_API_KEY = value;
 
   if (topStatus) {
-    topStatus.textContent = "Gemini: Connected (2.5 Flash)";
+    topStatus.textContent = "Gemini: Connected (Flash-Lite)";
   }
 
   if (saveBtn) {
@@ -41,33 +35,24 @@ function setGeminiKeyFromInput() {
   }
 
   if (statusEl) {
-    statusEl.textContent = "Key set for this tab. You can now ask the agent.";
+    statusEl.textContent = "Key set for this tab. Flash-Lite is ready.";
     statusEl.style.color = "#4b5563";
   }
 }
 
-/**
- * Call Gemini 2.5 Flash with a prompt and dashboard context
- *
- * @param {string} prompt
- * @param {object} dashboardContext
- * @returns {Promise<string>}
- */
 async function callGemini(prompt, dashboardContext) {
   if (!GEMINI_API_KEY) {
     throw new Error("Gemini API key is not set.");
   }
 
   const systemInstruction =
-    "You are an AI agent embedded in a personal dashboard for a busy " +
-    "software engineer in Chennai. You can see live weather, crypto, " +
-    "tech headlines, GitHub activity, tasks, and basic system info. " +
-    "Always answer concisely and reference the provided JSON context. " +
-    "Do not invent data that is not in the context.";
+    "You are an AI agent embedded in a personal dashboard. " +
+    "Answer briefly, use the provided dashboard JSON context, " +
+    "and do not invent missing facts.";
 
   const url =
     "https://generativelanguage.googleapis.com/v1beta/models/" +
-    "gemini-2.5-flash:generateContent?key=" +
+    "gemini-2.5-flash-lite:generateContent?key=" +
     encodeURIComponent(GEMINI_API_KEY);
 
   const body = {
@@ -79,12 +64,16 @@ async function callGemini(prompt, dashboardContext) {
           {
             text:
               "Dashboard context (JSON):\n" +
-              JSON.stringify(dashboardContext, null, 2),
+              JSON.stringify(dashboardContext || {}, null, 2),
           },
           { text: "\nUser question:\n" + prompt },
         ],
       },
     ],
+    generationConfig: {
+      temperature: 0.5,
+      maxOutputTokens: 300,
+    },
   };
 
   const resp = await fetch(url, {
@@ -108,9 +97,7 @@ async function callGemini(prompt, dashboardContext) {
     }
 
     if (resp.status === 429) {
-      throw new Error(
-        "Rate limit reached. Please wait a few seconds and try again."
-      );
+      throw new Error("Rate limit reached. Please wait a few seconds and try again.");
     }
 
     if (resp.status === 404) {
@@ -122,13 +109,12 @@ async function callGemini(prompt, dashboardContext) {
 
   const data = await resp.json();
   const candidates = data.candidates || [];
-
-  if (!candidates.length) {
-    throw new Error("Gemini returned no candidates.");
-  }
-
-  const parts = candidates[0].content?.parts || [];
+  const parts = candidates[0]?.content?.parts || [];
   const text = parts.map((p) => p.text || "").join("\n").trim();
 
-  return text || "(No response text from Gemini)";
+  if (!text) {
+    throw new Error("Gemini returned no response text.");
+  }
+
+  return text;
 }
