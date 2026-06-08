@@ -50,10 +50,10 @@ async function callGemini(prompt, dashboardContext) {
     "Answer briefly, use the provided dashboard JSON context, " +
     "and do not invent missing facts.";
 
-  const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/" +
-    "gemini-2.5-flash:generateContent?key=" +
-    encodeURIComponent(GEMINI_API_KEY);
+const url =
+  "https://generativelanguage.googleapis.com/v1beta/models/" +
+  "gemini-2.0-flash:generateContent?key=" +
+  encodeURIComponent(GEMINI_API_KEY);
 
   const body = {
     contents: [
